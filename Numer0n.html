@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numer0n - 数字当てゲーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .help-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .home-title {
+            text-align: center;
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .home-subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .game-info {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .game-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .game-info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .game-info-label {
+            color: #999;
+        }
+
+        .game-info-value {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .game-status {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .number-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .number-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .number-input button {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .number-input button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .result-input {
+            margin-bottom: 20px;
+        }
+
+        .result-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .result-btn {
+            padding: 12px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .result-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .result-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .turn-history {
+            margin-top: 20px;
+        }
+
+        .turn-history h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .turn-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .turn-item-guess {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .turn-item-result {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .help-section {
+            margin-bottom: 25px;
+        }
+
+        .help-section h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .help-section p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .help-example {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
+            border-left: 4px solid var(--success);
+        }
+
+        .game-code-box {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-code-box .label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .game-code-box .code {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            font-family: monospace;
+        }
+
+        .game-code-box .copy-btn {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .game-code-box .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.waiting {
+            background: var(--warning);
+            animation: blink 1s infinite;
+        }
+
+        .status-indicator.ready {
+            background: var(--success);
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% {
+                opacity: 1;
+            }
+            25%, 75% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-msg {
+            background: #fee;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .success-msg {
+            background: #efe;
+            color: var(--success);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border-left: 4px solid var(--success);
+        }
+
+        .winner-box {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .winner-box h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .winner-box p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .small-text {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .auto-button {
+            background: var(--success);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .auto-button:hover {
+            background: #27ae60;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 12px 16px;
+            }
+
+            .modal-header h2 {
+                font-size: 20px;
+            }
+
+            .home-title {
+                font-size: 28px;
+            }
+
+            .game-code-box .code {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <div class="header">
+            <h1 id="headerTitle">🎯 Numer0n</h1>
+            <button class="help-btn" onclick="openHelp()">?</button>
+        </div>
+
+        <!-- コンテンツ -->
+        <div class="content">
+            <!-- ホーム画面 -->
+            <div id="homeScreen" class="screen active">
+                <div class="home-title">🎯 Numer0n</div>
+                <div class="home-subtitle">数字当てゲーム - マルチプレイ</div>
+
+                <div class="input-group">
+                    <label>ニックネーム（必須）</label>
+                    <input type="text" id="nicknameInput" placeholder="例：太郎、花子など..." maxlength="15">
+                </div>
+
+                <div class="info-box">
+                    💡 ニックネームを入力して、下のボタンを押してゲームを開始しましょう！
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="goToCreateGame()">新しいゲーム作成</button>
+                    <button class="btn-secondary" onclick="goToJoinGame()">ゲームに参加</button>
+                </div>
+            </div>
+
+            <!-- ゲーム作成画面 -->
+            <div id="createGameScreen" class="screen">
+                <h2 style="color: #333; margin-bottom: 20px;">ゲーム作成</h2>
+
+                <div class="input-group">
+                    <label>秘密の種類を選択</label>
+                    <select id="secretTypeSelect" onchange="updateSecretOptions()">
+                        <option value="number">数字 (0-9)</option>
+                        <option value="word">英単語 (a-z)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>桁数を選択</label>
+                    <select id="digitSelect">
+                        <option value="3">3桁</option>
+                        <option value="4">4桁</option>
+                        <option value="5">5桁</option>
+                        <option value="6">6桁</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label id="secretLabel">秘密の数字を入力（重複なし）</label>
+                    <input type="text" id="secretInput" placeholder="例：123" maxlength="6">
+                    <small class="small-text" style="margin-top: 5px;">重複がないユニークな値を入力してください</small>
+                    <button class="auto-button" onclick="generateRandomSecret()">🎲 ランダム生成</button>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="goToHome()">戻る</button>
+                    <button class="btn-primary" onclick="generateGameCode()">ゲームコード生成</button>
+                </div>
+            </div>
+
+            <!-- ゲームコード表示画面 -->
+            <div id="gameCodeScreen" class="screen">
+                <h2 style="color: #333; margin-bottom: 20px;">ゲームコード</h2>
+
+                <div class="game-code-box">
+                    <div class="label">ゲームコードを相手に伝えてください</div>
+                    <div class="code" id="gameCodeDisplay">AB1234</div>
+                    <button class="copy-btn" onclick="copyGameCode()">コードをコピー</button>
+                </div>
+
+                <div class="info-box">
+                    👥 相手がこのコードを入力すると、ゲームが開始されます。<br>
+                    相手が参加するまでお待ちください...
+                </div>
+
+                <div id="waitingStatus" style="text-align: center; padding: 20px;">
+                    <div class="loading-spinner"></div>
+                    <p>相手の参加を待機中...</p>
+                    <span class="status-indicator waiting"></span>
+                    <span style="color: #999;">待機中</span>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="goToHome()">キャンセル</button>
+                </div>
+            </div>
+
+            <!-- ゲーム参加画面 -->
+            <div id="joinGameScreen" class="screen">
+                <h2 style="color: #333; margin-bottom: 20px;">ゲームに参加</h2>
+
+                <div class="input-group">
+                    <label>ゲームコードを入力</label>
+                    <input type="text" id="gameCodeInput" placeholder="例：AB1234" maxlength="6">
+                    <small class="small-text" style="margin-top: 5px;">相手から受け取ったコードを入力してください</small>
+                </div>
+
+                <div id="joinError" style="display: none;" class="error-msg"></div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="goToHome()">戻る</button>
+                    <button class="btn-primary" onclick="joinGameFlow()">参加</button>
+                </div>
+            </div>
+
+            <!-- ゲーム画面 -->
+            <div id="gameScreen" class="screen">
+                <div class="game-info">
+                    <div class="game-info-row">
+                        <span class="game-info-label">あなた：</span>
+                        <span class="game-info-value" id="myName">---</span>
+                    </div>
+                    <div class="game-info-row">
+                        <span class="game-info-label">相手：</span>
+                        <span class="game-info-value" id="opponentName">---</span>
+                    </div>
+                    <div class="game-info-row">
+                        <span class="game-info-label">ターン：</span>
+                        <span class="game-info-value" id="turnCount">1</span>
+                    </div>
+                </div>
+
+                <div id="gameStatusBox" class="game-status"></div>
+
+                <!-- 推測入力セクション -->
+                <div id="guessSection" class="input-section">
+                    <label>推測を入力</label>
+                    <div class="number-input">
+                        <input type="text" id="guessInput" placeholder="例：123" maxlength="6">
+                        <button onclick="submitGuess()">送信</button>
+                    </div>
+                    <small class="small-text">重複なしのユニークな値を入力してください</small>
+                </div>
+
+                <!-- 結果入力セクション -->
+                <div id="resultSection" class="result-input" style="display: none;">
+                    <label>相手の推測に対して結果を入力</label>
+                    <div id="opponentGuessDisplay" style="background: #f0f7ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
+                        相手の推測: <strong id="displayOpponentGuess">---</strong>
+                    </div>
+                    <div class="result-buttons" id="resultButtons"></div>
+                    <small class="small-text">複数選択可。すべてのヒントを入力して「送信」</small>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitResult()">結果を送信</button>
+                    </div>
+                </div>
+
+                <!-- ターン履歴 -->
+                <div class="turn-history">
+                    <h3>ゲーム履歴</h3>
+                    <div id="historyContainer"></div>
+                </div>
+            </div>
+
+            <!-- ゲーム終了画面 -->
+            <div id="gameOverScreen" class="screen">
+                <div id="gameOverContent"></div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="goToHome()">ホームに戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ヘルプモーダル -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ゲームルール</h2>
+                <button class="modal-close" onclick="closeHelp()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>🎯 ゲーム概要</h3>
+                    <p>Numer0n（ヌメロン）は、相手が隠した秘密の数字や英単語を当てるゲームです。</p>
+                    <p>リアルタイムで相手と対戦し、先に相手の秘密を当てた方が勝ちです！</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>📋 ゲーム設定</h3>
+                    <p><strong>秘密の種類：</strong></p>
+                    <p>数字（0-9）または英単語（a-z）を選択できます。</p>
+                    <p><strong>桁数：</strong></p>
+                    <p>3桁～6桁の間で選択可能です。</p>
+                    <p><strong>重複禁止：</strong></p>
+                    <p>各文字は重複なく、ユニークである必要があります。</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🔤 ヒントの種類</h3>
+                    <p><strong>🔴 EAT（イート）</strong></p>
+                    <p>数字も位置も両方正しい</p>
+                    <div class="help-example">
+                        秘密：「123」/ 推測：「123」→ EAT 3個
+                    </div>
+
+                    <p><strong>🟡 BITE（バイト）</strong></p>
+                    <p>数字は正しいが、位置が異なる</p>
+                    <div class="help-example">
+                        秘密：「123」/ 推測：「321」→ BITE 3個
+                    </div>
+
+                    <p><strong>⚪ BLOW（ブロー）</strong></p>
+                    <p>数字が完全に異なる</p>
+                    <div class="help-example">
+                        秘密：「123」/ 推測：「456」→ BLOW（数字なし）
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h3>🎮 ゲームの流れ</h3>
+                    <p><strong>1. ゲーム作成</strong></p>
+                    <p>秘密の種類と桁数を選び、値を入力します。</p>
+                    <p><strong>2. ゲームコード生成</strong></p>
+                    <p>コードが生成されます。相手に伝えてください。</p>
+                    <p><strong>3. 相手が参加</strong></p>
+                    <p>相手がコードを入力して参加します。</p>
+                    <p><strong>4. 交互にプレイ</strong></p>
+                    <p>あなたが推測→相手がヒント入力→交互に繰り返し</p>
+                    <p><strong>5. ゲーム終了</strong></p>
+                    <p>先に相手の秘密を当てた方が勝ち！</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>💡 戦略のヒント</h3>
+                    <p>・最初は異なる数字で情報収集しましょう</p>
+                    <p>・EATとBITEの情報から位置を絞ります</p>
+                    <p>・BLOWが出たら、その数字は除外できます</p>
+                    <p>・論理的に推測を絞っていくことが重要です</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>❓ よくある質問</h3>
+                    <p><strong>Q: 重複って何ですか？</strong></p>
+                    <p>A: 同じ文字が2回以上出ることです。例：「112」や「aab」はダメです。</p>
+                    <p><strong>Q: 大文字小文字は区別されますか？</strong></p>
+                    <p>A: すべて小文字で統一されます。大文字を入力しても小文字に変換されます。</p>
+                    <p><strong>Q: 相手が参加しません</strong></p>
+                    <p>A: ゲームコードが正しく伝わっているか確認してください。ブラウザを更新してみてください。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY4TKRV3e2266nAD7rSQtrHxLdh_RUemU",
+            authDomain: "numer0n-a64eb.firebaseapp.com",
+            databaseURL: "https://numer0n-a64eb-default-rtdb.firebaseio.com",
+            projectId: "numer0n-a64eb",
+            storageBucket: "numer0n-a64eb.firebasestorage.app",
+            messagingSenderId: "431479440432",
+            appId: "1:431479440432:web:b53ed62ba8ec0266b259f5"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // グローバル変数
+        let currentPlayer = null;
+        let currentGameCode = null;
+        let isGameCreator = false;
+        let selectedEat = 0;
+        let selectedBite = 0;
+        let gameListener = null;
+
+        // ゲーム状態
+        const gameState = {
+            mySecret: null,
+            opponentSecret: null,
+            myName: null,
+            opponentName: null,
+            secretType: null,
+            digits: null,
+            myGuesses: [],
+            opponentGuesses: [],
+            gameActive: true
+        };
+
+        // =====================
+        // ホーム画面
+        // =====================
+        window.goToHome = function() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('homeScreen').classList.add('active');
+            currentPlayer = null;
+            currentGameCode = null;
+            if (gameListener) gameListener();
+        };
+
+        window.goToCreateGame = function() {
+            const nickname = document.getElementById('nicknameInput').value.trim();
+            if (!nickname) {
+                alert('ニックネームを入力してください');
+                return;
+            }
+            currentPlayer = nickname;
+            isGameCreator = true;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('createGameScreen').classList.add('active');
+        };
+
+        window.goToJoinGame = function() {
+            const nickname = document.getElementById('nicknameInput').value.trim();
+            if (!nickname) {
+                alert('ニックネームを入力してください');
+                return;
+            }
+            currentPlayer = nickname;
+            isGameCreator = false;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('joinGameScreen').classList.add('active');
+        };
+
+        // =====================
+        // ゲーム作成
+        // =====================
+        window.updateSecretOptions = function() {
+            const type = document.getElementById('secretTypeSelect').value;
+            const label = document.getElementById('secretLabel');
+            const input = document.getElementById('secretInput');
+
+            if (type === 'number') {
+                label.textContent = '秘密の数字を入力（重複なし）';
+                input.placeholder = '例：123';
+            } else {
+                label.textContent = '秘密の英単語を入力（重複なし）';
+                input.placeholder = '例：abc';
+            }
+            input.value = '';
+        };
+
+        window.generateRandomSecret = function() {
+            const type = document.getElementById('secretTypeSelect').value;
+            const digits = parseInt(document.getElementById('digitSelect').value);
+            let secret = '';
+
+            if (type === 'number') {
+                const nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                for (let i = 0; i < digits; i++) {
+                    const idx = Math.floor(Math.random() * nums.length);
+                    secret += nums[idx];
+                    nums.splice(idx, 1);
+                }
+            } else {
+                const chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+                for (let i = 0; i < digits; i++) {
+                    const idx = Math.floor(Math.random() * chars.length);
+                    secret += chars[idx];
+                    chars.splice(idx, 1);
+                }
+            }
+
+            document.getElementById('secretInput').value = secret;
+        };
+
+        function validateSecret(secret, type, digits) {
+            secret = secret.trim().toLowerCase();
+
+            if (secret.length !== parseInt(digits)) {
+                alert(`${digits}文字で入力してください`);
+                return null;
+            }
+
+            // 重複チェック
+            if (new Set(secret).size !== secret.length) {
+                alert('重複なしのユニークな値を入力してください');
+                return null;
+            }
+
+            if (type === 'number') {
+                if (!/^[0-9]+$/.test(secret)) {
+                    alert('0-9の数字のみ使用してください');
+                    return null;
+                }
+            } else {
+                if (!/^[a-z]+$/.test(secret)) {
+                    alert('a-zの小文字のみ使用してください');
+                    return null;
+                }
+            }
+
+            return secret;
+        }
+
+        window.generateGameCode = function() {
+            const secretType = document.getElementById('secretTypeSelect').value;
+            const digits = document.getElementById('digitSelect').value;
+            const secret = document.getElementById('secretInput').value;
+
+            const validated = validateSecret(secret, secretType, digits);
+            if (!validated) return;
+
+            // ゲームコード生成
+            const code = generateRandomCode();
+            currentGameCode = code;
+            gameState.mySecret = validated;
+            gameState.secretType = secretType;
+            gameState.digits = digits;
+            gameState.myName = currentPlayer;
+
+            // Firebaseに記録
+            const gameRef = ref(database, 'games/' + code);
+            set(gameRef, {
+                creator: currentPlayer,
+                creatorSecret: validated,
+                secretType: secretType,
+                digits: digits,
+                creatorReady: true,
+                participantReady: false,
+                createdAt: Date.now(),
+                gameStatus: 'waiting'
+            });
+
+            document.getElementById('gameCodeDisplay').textContent = code;
+
+            // リスナー設定
+            gameListener = onValue(gameRef, snap => {
+                const data = snap.val();
+                if (data && data.participantReady) {
+                    gameState.opponentName = data.participant;
+                    gameState.opponentSecret = null;
+                    startGame(code);
+                }
+            });
+
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('gameCodeScreen').classList.add('active');
+        };
+
+        function generateRandomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        window.copyGameCode = function() {
+            const code = document.getElementById('gameCodeDisplay').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('ゲームコードをコピーしました！');
+            });
+        };
+
+        // =====================
+        // ゲーム参加
+        // =====================
+        window.joinGameFlow = function() {
+            const code = document.getElementById('gameCodeInput').value.trim().toUpperCase();
+            if (!code) {
+                document.getElementById('joinError').textContent = 'ゲームコードを入力してください';
+                document.getElementById('joinError').style.display = 'block';
+                return;
+            }
+
+            const gameRef = ref(database, 'games/' + code);
+            get(gameRef).then(snap => {
+                const data = snap.val();
+                if (!data) {
+                    document.getElementById('joinError').textContent = 'ゲームコードが見つかりません';
+                    document.getElementById('joinError').style.display = 'block';
+                    return;
+                }
+
+                currentGameCode = code;
+                isGameCreator = false;
+                gameState.secretType = data.secretType;
+                gameState.digits = data.digits;
+                gameState.myName = currentPlayer;
+                gameState.opponentName = data.creator;
+
+                // 秘密入力画面へ
+                goToParticipantSecretInput(data);
+            });
+        };
+
+        function goToParticipantSecretInput(gameData) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+            const screen = document.getElementById('createGameScreen');
+            screen.innerHTML = `
+                <h2 style="color: #333; margin-bottom: 20px;">あなたの秘密を設定</h2>
+                <div class="info-box">
+                    ゲーム作成者が設定した条件に合わせて、あなたの秘密を入力してください
+                </div>
+                <div class="input-group">
+                    <label>秘密の種類</label>
+                    <input type="text" value="${gameData.secretType === 'number' ? '数字' : '英単語'}" disabled style="background: #f9f9f9;">
+                </div>
+                <div class="input-group">
+                    <label>桁数</label>
+                    <input type="text" value="${gameData.digits}桁" disabled style="background: #f9f9f9;">
+                </div>
+                <div class="input-group">
+                    <label>秘密を入力（重複なし）</label>
+                    <input type="text" id="participantSecretInput" placeholder="例：${gameData.secretType === 'number' ? '123' : 'abc'}" maxlength="${gameData.digits}">
+                    <small class="small-text" style="margin-top: 5px;">重複がないユニークな値を入力してください</small>
+                    <button class="auto-button" onclick="generateRandomSecretForParticipant('${gameData.secretType}', '${gameData.digits}')">🎲 ランダム生成</button>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="goToHome()">キャンセル</button>
+                    <button class="btn-primary" onclick="confirmParticipantSecret('${gameData.secretType}', '${gameData.digits}')">確定</button>
+                </div>
+            `;
+            screen.classList.add('active');
+        }
+
+        window.generateRandomSecretForParticipant = function(type, digits) {
+            let secret = '';
+
+            if (type === 'number') {
+                const nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                for (let i = 0; i < parseInt(digits); i++) {
+                    const idx = Math.floor(Math.random() * nums.length);
+                    secret += nums[idx];
+                    nums.splice(idx, 1);
+                }
+            } else {
+                const chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+                for (let i = 0; i < parseInt(digits); i++) {
+                    const idx = Math.floor(Math.random() * chars.length);
+                    secret += chars[idx];
+                    chars.splice(idx, 1);
+                }
+            }
+
+            document.getElementById('participantSecretInput').value = secret;
+        };
+
+        window.confirmParticipantSecret = function(type, digits) {
+            const secret = document.getElementById('participantSecretInput').value;
+            const validated = validateSecret(secret, type, digits);
+            if (!validated) return;
+
+            gameState.mySecret = validated;
+
+            // Firebaseに参加情報を登録
+            const gameRef = ref(database, 'games/' + currentGameCode);
+            update(gameRef, {
+                participant: currentPlayer,
+                participantSecret: validated,
+                participantReady: true,
+                gameStatus: 'playing'
+            });
+
+            // ゲーム開始
+            startGame(currentGameCode);
+        };
+
+        // =====================
+        // ゲーム開始
+        // =====================
+        function startGame(code) {
+            currentGameCode = code;
+
+            const gameRef = ref(database, 'games/' + code);
+            get(gameRef).then(snap => {
+                const data = snap.val();
+
+                if (isGameCreator) {
+                    gameState.opponentName = data.participant;
+                } else {
+                    gameState.opponentName = data.creator;
+                }
+
+                // ゲーム画面に遷移
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('gameScreen').classList.add('active');
+
+                updateGameDisplay();
+
+                // リアルタイム更新をリッスン
+                gameListener = onValue(gameRef, updateGameFromFirebase);
+            });
+        }
+
+        function updateGameDisplay() {
+            document.getElementById('myName').textContent = gameState.myName;
+            document.getElementById('opponentName').textContent = gameState.opponentName;
+            updateGameStatus();
+        }
+
+        function updateGameStatus() {
+            const status = document.getElementById('gameStatusBox');
+            const guessSection = document.getElementById('guessSection');
+            const resultSection = document.getElementById('resultSection');
+
+            if (gameState.myGuesses.length === gameState.opponentGuesses.length) {
+                status.innerHTML = `
+                    <span class="status-indicator ready"></span>
+                    <strong>あなたのターンです。推測を入力してください。</strong>
+                `;
+                guessSection.style.display = 'block';
+                resultSection.style.display = 'none';
+            } else {
+                status.innerHTML = `
+                    <span class="status-indicator waiting"></span>
+                    <strong>相手の推測に対して結果を入力してください。</strong>
+                `;
+                guessSection.style.display = 'none';
+                resultSection.style.display = 'block';
+                updateResultButtons();
+            }
+
+            document.getElementById('turnCount').textContent = Math.max(gameState.myGuesses.length, gameState.opponentGuesses.length) + 1;
+            updateHistory();
+        }
+
+        function updateHistory() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < Math.max(gameState.myGuesses.length, gameState.opponentGuesses.length); i++) {
+                if (gameState.myGuesses[i]) {
+                    const guess = gameState.myGuesses[i];
+                    const resultText = guess.result ? `${guess.result.eat}E ${guess.result.bite}B` : '待機中...';
+                    const item = document.createElement('div');
+                    item.className = 'turn-item';
+                    item.innerHTML = `
+                        <div class="turn-item-guess">あなた: ${guess.guess}</div>
+                        <div class="turn-item-result">結果: ${resultText}</div>
+                    `;
+                    container.appendChild(item);
+                }
+
+                if (gameState.opponentGuesses[i]) {
+                    const guess = gameState.opponentGuesses[i];
+                    const resultText = guess.result ? `${guess.result.eat}E ${guess.result.bite}B` : '入力待機中...';
+                    const item = document.createElement('div');
+                    item.className = 'turn-item';
+                    item.innerHTML = `
+                        <div class="turn-item-guess">相手: ${guess.guess}</div>
+                        <div class="turn-item-result">結果: ${resultText}</div>
+                    `;
+                    container.appendChild(item);
+                }
+            }
+        }
+
+        // =====================
+        // ゲームプレイ
+        // =====================
+        window.submitGuess = function() {
+            const guess = document.getElementById('guessInput').value.trim().toLowerCase();
+
+            if (!guess) {
+                alert('推測を入力してください');
+                return;
+            }
+
+            const validated = validateSecret(guess, gameState.secretType, gameState.digits);
+            if (!validated) return;
+
+            // 既に同じ推測がないか確認
+            if (gameState.myGuesses.some(g => g.guess === validated)) {
+                alert('その推測はすでにしています');
+                return;
+            }
+
+            // Firebaseに送信
+            const gameRef = ref(database, 'games/' + currentGameCode);
+            const turnIndex = gameState.myGuesses.length;
+
+            const field = isGameCreator ? `creatorGuesses/${turnIndex}` : `participantGuesses/${turnIndex}`;
+            update(gameRef, {
+                [field]: {
+                    guess: validated,
+                    timestamp: Date.now()
+                }
+            });
+
+            document.getElementById('guessInput').value = '';
+        };
+
+        function updateResultButtons() {
+            const container = document.getElementById('resultButtons');
+            const opponentLastGuess = gameState.opponentGuesses[gameState.opponentGuesses.length - 1];
+
+            if (!opponentLastGuess || opponentLastGuess.result) {
+                container.innerHTML = '<p>次のターンを待機中...</p>';
+                return;
+            }
+
+            document.getElementById('displayOpponentGuess').textContent = opponentLastGuess.guess;
+
+            selectedEat = 0;
+            selectedBite = 0;
+
+            let html = '';
+            for (let e = 0; e <= parseInt(gameState.digits); e++) {
+                for (let b = 0; b <= parseInt(gameState.digits); b++) {
+                    if (e + b <= parseInt(gameState.digits)) {
+                        html += `<button class="result-btn" onclick="selectResult(${e}, ${b})">E${e} B${b}</button>`;
+                    }
+                }
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.selectResult = function(eat, bite) {
+            selectedEat = eat;
+            selectedBite = bite;
+            document.querySelectorAll('.result-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        };
+
+        window.submitResult = function() {
+            if (selectedEat === 0 && selectedBite === 0 && gameState.opponentGuesses[gameState.opponentGuesses.length - 1].guess !== gameState.mySecret) {
+                // 両方0の場合は確認
+                if (!confirm('結果は E0 B0 ですか？')) {
+                    return;
+                }
+            }
+
+            const gameRef = ref(database, 'games/' + currentGameCode);
+            const turnIndex = gameState.opponentGuesses.length - 1;
+
+            const field = isGameCreator ? `creatorGuesses/${turnIndex}/result` : `participantGuesses/${turnIndex}/result`;
+            update(gameRef, {
+                [field]: {
+                    eat: selectedEat,
+                    bite: selectedBite,
+                    timestamp: Date.now()
+                }
+            });
+
+            selectedEat = 0;
+            selectedBite = 0;
+        };
+
+        function calculateEATBITE(secret, guess) {
+            let eat = 0, bite = 0;
+
+            for (let i = 0; i < secret.length; i++) {
+                if (secret[i] === guess[i]) {
+                    eat++;
+                } else if (secret.includes(guess[i])) {
+                    bite++;
+                }
+            }
+
+            return { eat, bite };
+        }
+
+        // =====================
+        // Firebase リアルタイム更新
+        // =====================
+        function updateGameFromFirebase(snap) {
+            const data = snap.val();
+            if (!data) return;
+
+            // 自分の推測を更新
+            if (isGameCreator) {
+                if (data.creatorGuesses) {
+                    gameState.myGuesses = Object.values(data.creatorGuesses || {});
+                }
+                if (data.participantGuesses) {
+                    gameState.opponentGuesses = Object.values(data.participantGuesses || {});
+                }
+            } else {
+                if (data.participantGuesses) {
+                    gameState.myGuesses = Object.values(data.participantGuesses || {});
+                }
+                if (data.creatorGuesses) {
+                    gameState.opponentGuesses = Object.values(data.creatorGuesses || {});
+                }
+            }
+
+            // 自動EAT/BITE計算と勝利チェック
+            if (isGameCreator) {
+                if (data.participantGuesses) {
+                    Object.keys(data.participantGuesses).forEach(key => {
+                        const guessData = data.participantGuesses[key];
+                        if (!guessData.result) {
+                            const result = calculateEATBITE(gameState.mySecret, guessData.guess);
+                            update(ref(database, 'games/' + currentGameCode), {
+                                [`participantGuesses/${key}/result`]: result
+                            });
+
+                            if (result.eat === parseInt(gameState.digits)) {
+                                endGame(false);
+                            }
+                        }
+                    });
+                }
+            } else {
+                if (data.creatorGuesses) {
+                    Object.keys(data.creatorGuesses).forEach(key => {
+                        const guessData = data.creatorGuesses[key];
+                        if (!guessData.result) {
+                            const result = calculateEATBITE(gameState.mySecret, guessData.guess);
+                            update(ref(database, 'games/' + currentGameCode), {
+                                [`creatorGuesses/${key}/result`]: result
+                            });
+
+                            if (result.eat === parseInt(gameState.digits)) {
+                                endGame(false);
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 相手の推測が当たったかチェック
+            if (isGameCreator) {
+                if (data.creatorGuesses) {
+                    Object.keys(data.creatorGuesses).forEach(key => {
+                        const guessData = data.creatorGuesses[key];
+                        if (guessData.result && guessData.result.eat === parseInt(gameState.digits)) {
+                            endGame(true);
+                        }
+                    });
+                }
+            } else {
+                if (data.participantGuesses) {
+                    Object.keys(data.participantGuesses).forEach(key => {
+                        const guessData = data.participantGuesses[key];
+                        if (guessData.result && guessData.result.eat === parseInt(gameState.digits)) {
+                            endGame(true);
+                        }
+                    });
+                }
+            }
+
+            updateGameStatus();
+        }
+
+        function endGame(won) {
+            gameState.gameActive = false;
+            const screen = document.getElementById('gameOverScreen');
+            const content = document.getElementById('gameOverContent');
+
+            if (won) {
+                const tries = isGameCreator ? gameState.opponentGuesses.length : gameState.myGuesses.length;
+                content.innerHTML = `
+                    <div class="winner-box">
+                        <h2>🎉 あなたの勝ち！</h2>
+                        <p>相手の秘密を当てました！</p>
+                        <p style="margin-top: 10px; font-size: 16px;">試行回数: ${tries}回</p>
+                    </div>
+                `;
+            } else {
+                const tries = isGameCreator ? gameState.myGuesses.length : gameState.opponentGuesses.length;
+                content.innerHTML = `
+                    <div class="winner-box" style="background: linear-gradient(135deg, #a8a8a8 0%, #646464 100%);">
+                        <h2>😢 あなたの負け</h2>
+                        <p>相手に秘密を当てられました</p>
+                        <p style="margin-top: 10px; font-size: 16px;">相手の試行回数: ${tries}回</p>
+                    </div>
+                `;
+            }
+
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            screen.classList.add('active');
+
+            if (gameListener) gameListener();
+        }
+
+        // =====================
+        // ヘルプモーダル
+        // =====================
+        window.openHelp = function() {
+            document.getElementById('helpModal').classList.add('active');
+        };
+
+        window.closeHelp = function() {
+            document.getElementById('helpModal').classList.remove('active');
+        };
+
+        document.getElementById('helpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                window.closeHelp();
+            }
+        });
+    </script>
+</body>
+</html>
